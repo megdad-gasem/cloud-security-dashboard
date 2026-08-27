@@ -130,6 +130,44 @@ def create_instance(
     return new_instance
 
 
+
+# =========================
+# Alerts
+# =========================
+
+@app.get(
+    "/api/alerts",
+    response_model=List[schemas.Alert],
+)
+def get_alerts(
+    db: Session = Depends(get_db),
+):
+    return db.query(models.Alert).all()
+
+
+@app.post(
+    "/api/alerts",
+    response_model=schemas.Alert,
+)
+def create_alert(
+    alert: schemas.AlertCreate,
+    db: Session = Depends(get_db),
+):
+    new_alert = models.Alert(
+        title=alert.title,
+        severity=alert.severity,
+        source=alert.source,
+        status=alert.status,
+    )
+
+    db.add(new_alert)
+    db.commit()
+    db.refresh(new_alert)
+
+    return new_alert    
+
+
+
 # =========================
 # Compliance
 # =========================
@@ -162,40 +200,4 @@ def create_compliance_rule(
     db.refresh(new_rule)
 
     return new_rule
-
-
-# =========================
-# Alerts
-# =========================
-
-@app.get(
-    "/api/alerts",
-    response_model=List[schemas.Alert],
-)
-def get_alerts(
-    db: Session = Depends(get_db),
-):
-    return db.query(models.Alert).all()
-
-
-@app.post(
-    "/api/alerts",
-    response_model=schemas.Alert,
-)
-def create_alert(
-    alert: schemas.AlertCreate,
-    db: Session = Depends(get_db),
-):
-    new_alert = models.Alert(
-        title=alert.title,
-        source=alert.source,
-        severity=alert.severity,
-        status=alert.status,
-    )
-
-    db.add(new_alert)
-    db.commit()
-    db.refresh(new_alert)
-
-    return new_alert    
 

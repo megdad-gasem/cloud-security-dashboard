@@ -72,8 +72,8 @@ class ComplianceRule(ComplianceRuleBase):
 
 class AlertBase(BaseModel):
     title: str
-    source: str
     severity: Literal["High", "Medium", "Low", "Critical"]
+    source: str
     status: Literal["Active", "Resolved"]
 
 
