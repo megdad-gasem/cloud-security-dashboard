@@ -1,0 +1,31 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* منع أي scroll على مستوى الصفحة كاملة - الداشبورد لازم يطابق الشاشة بالظبط */
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background-color: #09121F;
+}
+
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+/* شريط تمرير رفيع لأي عنصر داخلي بيحتاج scroll صغير (مثلاً جدول طويل جداً) */
+.thin-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.thin-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #1B2839;
+  border-radius: 4px;
+}
+.thin-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
