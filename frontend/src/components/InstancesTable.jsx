@@ -3,7 +3,24 @@ import { MoreVertical, ChevronsLeft, ChevronsRight } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { getInstances } from '../services/api'
 // شريط تقدم صغير (CPU / Memory) بلون متغير حسب النسبة
+// ملاحظة: CPU/Memory مش سمات محفوظة على الـ Instance ولا بترجع من /api/instances
+// حالياً (الرد بيحتوي name/public_ip/status بس). دول مقاييس مراقبة حية مستقبلية
+// (مثلاً CloudWatch). لما الـ API يرجّع أرقام حقيقية cpu/memory، الـ bar هيترسم
+// تلقائياً. لحد ما يجهز، لو المقياس مش متاح (undefined/null) بنعرض "—" محايد
+// بدل ما نرسم بار 0% مضلِّل.
 function UsageBar({ value, active }) {
+  const hasMetric = typeof value === 'number' && !Number.isNaN(value)
+
+  // مقياس مش متاح بعد — نعرض شرطة محايدة (مش بار 0% مضلِّل، ومش رقم وهمي)
+  if (!hasMetric) {
+    return (
+      <div className="flex items-center gap-2 w-24">
+        <div className="flex-1 h-1.5 rounded-full bg-base-panel2 overflow-hidden" />
+        <span className="text-slate-500 text-[11px] w-8 shrink-0">—</span>
+      </div>
+    )
+  }
+
   const color = !active ? 'bg-slate-700' : value > 70 ? 'bg-red-500' : value > 40 ? 'bg-amber-500' : 'bg-green-500'
   return (
     <div className="flex items-center gap-2 w-24">

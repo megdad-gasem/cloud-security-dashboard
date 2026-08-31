@@ -29,3 +29,43 @@ export async function getAlerts() {
 
   return response.json()
   }
+
+// ---------------------------------------------------------------------------
+// Infrastructure
+//
+// مُعزل: صفحة البنية التحتية بتستخدم دالة API بدل ما تكلم الـ backend مباشرة.
+// حالياً بنرجع بيانات mock من infrastructureData.js. لما يتوفر الـ backend الحقيقي
+// (GET /api/infrastructure) استبدل الـ body بالنداء دي بس — مش هتعدّل الصفحة.
+// ---------------------------------------------------------------------------
+import {
+  infrastructure,
+  infrastructureFindings,
+  topologyNodes,
+  topologyLinks,
+} from '../data/infrastructureData'
+
+export async function getInfrastructure() {
+  // TODO: replace with  const res = await fetch(`${API_URL}/api/infrastructure`)
+  // when the real backend is ready.
+  // نحاكي تأخير شبكة صغير عشان الـ loading spinner يبان.
+  await new Promise((resolve) => setTimeout(resolve, 450))
+  return {
+    infrastructure,
+    findings: infrastructureFindings,
+    topology: { nodes: topologyNodes, links: topologyLinks },
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Monitoring
+// مُعزل: الـ Monitoring page بتستخدم دالة API بدل ما تكلم الـ backend مباشرة.
+// حالياً بنرجع mock من monitoringMockData.js. لما يتوفر الـ backend الحقيقي
+// (GET /api/monitoring/...) استبدل الـ body بالنداءات دي بس — مش هتعدّل الصفحة.
+// ---------------------------------------------------------------------------
+import { monitoring } from '../data/monitoringMockData'
+
+export async function getMonitoringData() {
+  // TODO: replace with parallel fetches to /api/monitoring/{summary,resources,metrics,alerts,activity}
+  await new Promise((resolve) => setTimeout(resolve, 500))
+  return monitoring
+}

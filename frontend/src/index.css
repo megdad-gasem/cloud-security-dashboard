@@ -29,3 +29,60 @@ body {
 .thin-scrollbar::-webkit-scrollbar-track {
   background: transparent;
 }
+
+/* ---- React Flow Aegis dark theme overrides ---- */
+.aegis-reactflow {
+  background: #09121F !important;
+}
+
+/* Controls panel */
+.aegis-rf-controls {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+.aegis-rf-controls button {
+  background: #0E1A2B !important;
+  border: 1px solid #1B2839 !important;
+  color: #94A3B8 !important;
+  border-radius: 8px !important;
+  width: 28px !important;
+  height: 28px !important;
+  margin-bottom: 4px !important;
+}
+.aegis-rf-controls button:hover {
+  background: #162236 !important;
+  color: #E2E8F0 !important;
+  border-color: #334155 !important;
+}
+.aegis-rf-controls button svg {
+  fill: currentColor !important;
+}
+.aegis-rf-controls .react-flow__controls-separator,
+.aegis-rf-controls hr {
+  display: none !important;
+}
+
+/* Edge default color */
+.react-flow__edge-path {
+  stroke: #475569;
+}
+
+/* Selection box */
+.react-flow__selection {
+  background: rgba(59, 130, 246, 0.08) !important;
+  border: 1px solid rgba(59, 130, 246, 0.3) !important;
+}
+
+/* Node handles — subtle */
+.react-flow__handle {
+  opacity: 0 !important;
+  width: 6px !important;
+  height: 6px !important;
+}
+
+/* Minimap */
+.aegis-minimap {
+  border-radius: 8px !important;
+  overflow: hidden;
+}
