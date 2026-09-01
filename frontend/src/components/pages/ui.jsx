@@ -21,7 +21,7 @@ export function PageHeader({ title, subtitle, right }) {
 // ----------------------------- StatTile ------------------------------
 export function StatTile({ icon: Icon, accent = 'bg-base-panel2 text-slate-300', title, value, sub }) {
   return (
-    <div className="bg-base-panel border border-base-border rounded-xl p-3.5 min-w-0 flex items-center gap-3">
+    <div className="bg-gray-900/80 border border-gray-800/80 rounded-xl p-3.5 min-w-0 flex items-center gap-3">
       {Icon && (
         <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${accent}`}>
           <Icon className="w-5 h-5" strokeWidth={2.1} />
@@ -62,6 +62,44 @@ export function DistributionBar({ segments }) {
     </div>
   )
 }
+// ----------------------------- StatusPill ----------------------------
+/** شارة حالة ناعمة (pill + نقطة ملونة) — نفس أسلوب شارة حالة النظام في الـ Sidebar. */
+const PILL_STYLE = {
+  Passed: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+  Failed: 'bg-rose-500/10 text-rose-400 border-rose-500/20',
+  Warning: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
+  Resolved: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+  Remediated: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+  Ready: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+  Enabled: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+  Active: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+  Open: 'bg-slate-500/10 text-slate-300 border-slate-500/20',
+  Exception: 'bg-slate-500/10 text-slate-400 border-slate-500/20',
+  Accepted: 'bg-slate-500/10 text-slate-400 border-slate-500/20',
+  New: 'bg-slate-500/10 text-slate-300 border-slate-500/20',
+  Investigating: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
+  Responded: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
+  Containment: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
+}
+const PILL_DOT = {
+  Passed: 'bg-emerald-400', Failed: 'bg-rose-400', Warning: 'bg-amber-400',
+  Resolved: 'bg-emerald-400', Remediated: 'bg-emerald-400', Ready: 'bg-emerald-400',
+  Enabled: 'bg-emerald-400', Active: 'bg-emerald-400', Open: 'bg-slate-400',
+  Exception: 'bg-slate-400', Accepted: 'bg-slate-400', New: 'bg-slate-400',
+  Investigating: 'bg-blue-400', Responded: 'bg-blue-400', Containment: 'bg-amber-400',
+}
+export function StatusPill({ status }) {
+  const s = PILL_STYLE[status] || PILL_STYLE.Open
+  const d = PILL_DOT[status] || 'bg-slate-400'
+  return (
+    <span className={`inline-flex items-center gap-1.5 border px-2.5 py-1 rounded-full text-xs font-medium whitespace-nowrap ${s}`}>
+      <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${d}`} />
+      {status}
+    </span>
+  )
+}
+
+
 // ----------------------------- StatusText ----------------------------
 export function StatusText({ status }) {
   const map = {
@@ -124,26 +162,35 @@ export function Button({ variant = 'neutral', loading = false, disabled = false,
     </button>
   )
 }
+/** هرمية الأزرار الموحّدة — primary CTA أزرق، والباقي هادئ (ghost). */
+const ACTION_CLASS = {
+  primary: 'bg-blue-600 text-white hover:bg-blue-500 text-xs px-3 py-1.5 rounded-lg font-medium',
+  secondary: 'bg-transparent text-gray-400 hover:text-white hover:bg-gray-800/60 text-xs px-2.5 py-1.5 rounded-lg transition',
+  danger: 'bg-red-600/90 text-white hover:bg-red-600 text-xs px-3 py-1.5 rounded-lg font-medium',
+  contain: 'bg-red-600/90 text-white hover:bg-red-600 text-xs px-3 py-1.5 rounded-lg font-medium',
+  success: 'bg-emerald-700/90 text-white hover:bg-emerald-700 text-xs px-3 py-1.5 rounded-lg font-medium',
+  close: 'bg-emerald-700/90 text-white hover:bg-emerald-700 text-xs px-3 py-1.5 rounded-lg font-medium',
+  neutral: 'bg-transparent text-gray-400 hover:text-white hover:bg-gray-800/60 text-xs px-2.5 py-1.5 rounded-lg transition',
+}
+
 // ----------------------------- ActionButton --------------------------
 /** زر إجراء واحد — بيقرأ الـ label/intent/hierarchy من كتالوج ACTION_TYPES. */
 export function ActionButton({ actionType, id, collection, onClick, disabled, variant, size = 'sm' }) {
   const def = ACTION_TYPES[actionType]
   if (!def) return null
   const v = variant || def.hier || 'neutral'
-  const pad = size === 'sm' ? 'px-2.5' : 'px-3 py-1.5 text-[11.5px]'
   const pa = securityCenter._processingAction
   const isInflight = !!pa && !!id && pa.sid === `${id}::${actionType}`
   return (
-    <Button
-      variant={v}
-      loading={isInflight}
-      disabled={disabled}
+    <button
       onClick={onClick}
+      disabled={disabled || isInflight}
       title={def.intent}
-      className={size === 'sm' ? '' : pad}
+      className={`inline-flex items-center gap-1.5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none ${ACTION_CLASS[v] || ACTION_CLASS.neutral}`}
     >
+      {isInflight && <Loader2 className="w-3 h-3 animate-spin" />}
       {def.label}
-    </Button>
+    </button>
   )
 }
 

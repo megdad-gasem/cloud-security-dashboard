@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { ClipboardCheck, ShieldCheck, ShieldX, ShieldAlert, ShieldOff } from 'lucide-react'
-import { PageHeader, Panel, PanelHeader, StatTile, StatusText, ActionRow } from './ui'
+import { PageHeader, Panel, PanelHeader, StatTile, StatusPill, ActionRow } from './ui'
 import { securityCenter, useSecurityCenter, navigate } from '../../store/securityCenter'
 
 const STATUS_ICON = { Passed: ShieldCheck, Failed: ShieldX, Warning: ShieldAlert, Exception: ShieldOff }
@@ -59,7 +59,7 @@ export default function CompliancePage() {
 
       <div className="flex-1 min-h-0 grid grid-cols-1 xl:grid-cols-[1fr_1.6fr] gap-4">
         {/* Frameworks */}
-        <Panel className="flex flex-col min-h-0 overflow-hidden">
+        <Panel surface="muted" className="flex flex-col min-h-0 overflow-hidden">
           <PanelHeader title="Framework Overview" subtitle="click to filter" />
           <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar px-3 pb-3 space-y-1.5">
             {frameworks.map((f) => {
@@ -68,8 +68,10 @@ export default function CompliancePage() {
                 <button
                   key={f.id}
                   onClick={() => setFwId(f.id)}
-                  className={`w-full flex items-center gap-2.5 px-2.5 py-2.5 rounded-lg border transition-colors ${fwId === f.id ? 'bg-blue-600/15 border-blue-500/40' : 'border-base-border hover:bg-base-panel2/50'}`}
+                  className={`w-full flex items-center gap-2.5 px-2.5 py-2.5 rounded-lg border transition-colors ${fwId === f.id ? 'bg-blue-950/40 border-blue-500/50' : 'border-base-border hover:bg-base-panel2/50'}`}
                 >
+                  {/* مؤشر التفعيل — نفس فكرة تمييز عنصر الـ Sidebar النشط، لكن بشكل هادئ */}
+                  <span className={`w-1 self-stretch rounded-full shrink-0 transition-colors ${fwId === f.id ? 'bg-blue-500' : 'bg-transparent'}`} />
                   <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${STATUS_COLOR[f.status]}`}>
                     <Icon className="w-4 h-4" strokeWidth={2} />
                   </div>
@@ -77,7 +79,7 @@ export default function CompliancePage() {
                     <p className="text-slate-200 text-[12px] font-medium truncate">{f.name}</p>
                     <p className="text-slate-500 text-[10px]">Score {f.score}%</p>
                   </div>
-                  <StatusText status={f.status} />
+                  <StatusPill status={f.status} />
                 </button>
               )
             })}
@@ -85,27 +87,25 @@ export default function CompliancePage() {
         </Panel>
 
         {/* Controls — live, actionable */}
-        <Panel className="flex flex-col min-h-0 overflow-hidden">
+        <Panel surface="muted" className="flex flex-col min-h-0 overflow-hidden">
           <PanelHeader title="Controls" subtitle="pass / fail per framework · remediate failed" />
           <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar px-3 pb-3">
             <div className="rounded-lg border border-base-border overflow-hidden">
-              <div className="grid grid-cols-[64px_56px_1fr_76px] text-slate-500 text-[10px] px-2 py-1.5 bg-base-panel2/60 gap-1">
+              <div className="grid grid-cols-[64px_56px_1fr_96px] text-slate-500 text-[10px] px-4 py-2 bg-base-panel2/60 gap-2">
                 <span>ID</span><span>FW</span><span>Control</span><span>Status</span>
               </div>
               <div className="divide-y divide-base-border">
                 {controls.map((c) => (
-                  <div key={c.id} className="grid grid-cols-[64px_56px_1fr_76px] items-start gap-1 px-2 py-2">
+                  <div key={c.id} className="grid grid-cols-[64px_56px_1fr_96px] items-start gap-2 px-4 py-4">
                     <span className="text-slate-500 text-[10.5px]">{c.id}</span>
                     <span className="text-slate-400 text-[10px]">{c.framework}</span>
-                    <div className="min-w-0">
-                      <p className="text-slate-200 text-[11.5px] truncate">{c.title}</p>
-                      {c.resource && <p className="text-slate-500 text-[9.5px] truncate">Resource: {c.resource}{c.finding && c.finding !== '—' ? ` · finding ${c.finding}` : ''}</p>}
-                      <div className="mt-1">
-                        <ActionRow collection="controls" id={c.id} actions={controlActions(c)} onAction={onControl(c)} />
-                      </div>
+                    <div className="min-w-0 space-y-1.5">
+                      <p className="text-slate-200 text-xs font-medium truncate">{c.title}</p>
+                      {c.resource && <p className="text-slate-500 text-[10.5px] truncate">Resource: {c.resource}{c.finding && c.finding !== '—' ? ` · finding ${c.finding}` : ''}</p>}
+                      <ActionRow collection="controls" id={c.id} actions={controlActions(c)} onAction={onControl(c)} />
                     </div>
                     <div className="text-right">
-                      <StatusText status={c.status} />
+                      <StatusPill status={c.status} />
                     </div>
                   </div>
                 ))}

@@ -7,10 +7,14 @@ import {
 // مكوّنات UI مشتركة صغيرة تحافظ على لغة التصميم المتّبعة في كامل الـ Aegis.
 // ---------------------------------------------------------------------------
 
-/** كارت (surface) موحّد — نفس bg-base-panel + حدود base-border */
-export function Panel({ className = '', children }) {
+/** كارت (surface) موحّد — سطح أساسي (navy) أو سطح هادئ موحّد (muted) حسب الصفحة */
+export function Panel({ className = '', children, surface = 'base' }) {
+  const SURFACES = {
+    base: 'bg-base-panel border-base-border',
+    muted: 'bg-gray-900/80 border-gray-800/80',
+  }
   return (
-    <div className={`bg-base-panel border border-base-border rounded-xl ${className}`}>
+    <div className={`border rounded-xl ${SURFACES[surface] || SURFACES.base} ${className}`}>
       {children}
     </div>
   )
