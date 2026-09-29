@@ -11,8 +11,28 @@ export default function MonitoringPageHeader({ refreshing, lastUpdated, onRefres
   return (
     <div className="flex items-center justify-between gap-4">
       <div>
-        <h1 className="text-white text-xl font-semibold">Monitoring</h1>
+        <div className="flex items-center gap-2.5">
+          <h1 className="text-white text-xl font-semibold">Monitoring</h1>
+          {/* Live indicator — reflects the existing auto-refresh state only (no invented data) */}
+          <span
+            className={`inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-[10px] font-semibold ${
+              autoRefresh
+                ? 'bg-green-500/10 text-green-400 border-green-500/30'
+                : 'bg-base-panel2 text-slate-400 border-base-border'
+            }`}
+          >
+            <span className={`w-1.5 h-1.5 rounded-full ${autoRefresh ? 'bg-green-400 animate-pulse' : 'bg-slate-500'}`} />
+            {autoRefresh ? 'LIVE' : 'Manual'}
+          </span>
+        </div>
         <p className="text-slate-500 text-[13px] mt-0.5">Real-time infrastructure health and performance</p>
+        {/* Telemetry line — reuses the existing environment / lastUpdated / autoRefresh state */}
+        <p className="text-slate-500 text-[10.5px] mt-1">
+          Telemetry: <span className="text-slate-400">{environment}</span>
+          <span className="text-slate-600"> · </span>updated <span className="text-slate-400">{lastUpdated}</span>
+          <span className="text-slate-600"> · </span>
+          auto <span className={autoRefresh ? 'text-green-400' : 'text-slate-400'}>{autoRefresh ? 'on' : 'off'}</span>
+        </p>
       </div>
 
       <div className="flex items-center gap-3">
@@ -38,9 +58,6 @@ export default function MonitoringPageHeader({ refreshing, lastUpdated, onRefres
         >
           <RefreshCw className={`w-4 h-4 text-white ${refreshing ? 'animate-spin' : ''}`} />
         </button>
-        <span className="text-slate-500 text-[11.5px] hidden xl:block">
-          Last updated: <span className="text-slate-300">{lastUpdated}</span>
-        </span>
 
         {/* محدد البيئة */}
         <label className="relative flex items-center gap-1 bg-base-panel2 border border-base-border rounded-lg pl-2 pr-1 py-1.5">

@@ -1,7 +1,17 @@
 import React, { useMemo, useState } from 'react'
-import { Users, KeyRound, ShieldAlert, Crown, Search } from 'lucide-react'
-import { PageHeader, Panel, PanelHeader, StatTile, StatusDot, StatusText, SearchInput, ActionRow, ActionButton, Chip } from './ui'
+import { PageHeader, Panel, PanelHeader, StatusDot, StatusText, SearchInput, ActionRow, ActionButton, Chip } from './ui'
 import { securityCenter, useSecurityCenter } from '../../store/securityCenter'
+
+// Posture stamp: label + value chip for the IAM access-posture strip.
+// No icons — the emphasis stays on the identity/access numbers themselves.
+function PostureStamp({ label, value, tone = 'text-white' }) {
+  return (
+    <div className="shrink-0 bg-base-panel2 border border-base-border rounded-lg pl-2.5 pr-2 py-1.5 flex items-center gap-1.5">
+      <span className="text-slate-500 text-[9.5px] uppercase tracking-wide">{label}</span>
+      <span className={`text-[13px] font-semibold ${tone}`}>{value}</span>
+    </div>
+  )
+}
 
 // Maps an access-anomaly principal to the corresponding identity id so the
 // anomaly actions and the identity card stay consistent.
@@ -92,12 +102,13 @@ export default function IamPage() {
     <div className="flex-1 min-h-0 flex flex-col gap-4 overflow-hidden">
       <PageHeader title="IAM" subtitle="Identity, role, and access-anomaly security" />
 
-      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3 shrink-0">
-        <StatTile icon={Users} accent="bg-blue-500/15 text-blue-400" title="Identities" value={identities.length} sub="users & services" />
-        <StatTile icon={KeyRound} accent="bg-purple-500/15 text-purple-400" title="Roles" value={roles.length} sub="role definitions" />
-        <StatTile icon={Crown} accent="bg-red-500/15 text-red-400" title="Privileged" value={privileged} sub="admin access" />
-        <StatTile icon={ShieldAlert} accent="bg-amber-500/15 text-amber-400" title="Anomalies" value={anomaliesCount} sub="detected" />
-        <StatTile icon={ShieldAlert} accent="bg-red-500/15 text-red-400" title="MFA Off" value={mfaOff} sub="identities" />
+      {/* Access posture stamps — same existing identity/role/permission numbers */}
+      <div className="shrink-0 flex flex-wrap items-center gap-2">
+        <PostureStamp label="Identities" value={identities.length} />
+        <PostureStamp label="Roles" value={roles.length} />
+        <PostureStamp label="Privileged" value={privileged} tone="text-red-400" />
+        <PostureStamp label="Anomalies" value={anomaliesCount} tone="text-amber-400" />
+        <PostureStamp label="MFA Off" value={mfaOff} tone="text-red-400" />
       </div>
 
       {mfaOnly && (

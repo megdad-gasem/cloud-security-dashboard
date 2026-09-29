@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
-import { ShieldAlert, AlertTriangle, Bug, Boxes, Radio, Filter } from 'lucide-react'
-import { PageHeader, Panel, PanelHeader, StatTile, SeverityChip, DistributionBar, ActionButton, Chip } from './ui'
+import { Filter } from 'lucide-react'
+import { PageHeader, Panel, PanelHeader, SeverityChip, DistributionBar, ActionButton, Chip } from './ui'
 import { securityCenter, useSecurityCenter, navigate } from '../../store/securityCenter'
 
 const SEV_COLOR = { Critical: 'bg-red-500', High: 'bg-red-400', Medium: 'bg-amber-500', Low: 'bg-blue-500' }
@@ -93,12 +93,37 @@ export default function SecurityPage() {
         right={<span className="text-slate-500 text-[11.5px] hidden xl:block">Last scan: <span className="text-slate-300">2m ago</span></span>}
       />
 
-      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3 shrink-0">
-        <StatTile icon={ShieldAlert} accent="bg-slate-500/15 text-slate-300" title="Open Findings" value={open} sub={`${findings.length} total`} />
-        <StatTile icon={AlertTriangle} accent="bg-red-500/15 text-red-400" title="Critical" value={critical} sub="needs attention" />
-        <StatTile icon={Bug} accent="bg-amber-500/15 text-amber-400" title="High" value={high} sub="review soon" />
-        <StatTile icon={Boxes} accent="bg-blue-500/15 text-blue-400" title="Affected Resources" value={affected} sub="unique" />
-        <StatTile icon={Radio} accent="bg-purple-500/15 text-purple-400" title="Risk Score" value={risk} sub="weighted" />
+      {/* Risk posture rail — same existing posture values (open/critical/high/affected/risk) */}
+      <div className="shrink-0 border border-base-border rounded-xl bg-base-panel px-3.5 py-2 flex flex-wrap items-center gap-x-4 gap-y-1.5">
+        <span className="text-slate-500 text-[10px] uppercase tracking-wider shrink-0">Risk posture</span>
+        <div className="flex items-center gap-2">
+          {/* Each severity is a shortcut into the existing severity filter (same setSev as the chips below) */}
+          {distribution.map((d) => (
+            <button
+              key={d.label}
+              type="button"
+              onClick={() => setSev(d.label)}
+              aria-pressed={sev === d.label}
+              title={`Filter findings: ${d.label}`}
+              className={`inline-flex items-center gap-1.5 rounded-md px-1.5 py-0.5 text-[11.5px] font-semibold transition-colors cursor-pointer ${
+                sev === d.label
+                  ? 'bg-base-panel2 ring-1 ring-blue-500/40'
+                  : 'hover:bg-base-panel2/60 hover:ring-1 hover:ring-blue-500/30 focus-visible:ring-1 focus-visible:ring-blue-500/40'
+              } ${SEV_LABEL[d.label] || 'text-slate-400'}`}
+            >
+              <span className={`w-2 h-2 rounded-full ${d.color}`} />
+              {d.label}
+              <span className="text-white font-semibold">{d.value}</span>
+            </button>
+          ))}
+        </div>
+        <div className="ml-auto flex items-center gap-2 text-[11px] text-slate-400">
+          <span>Open <span className="text-white font-semibold">{open}</span></span>
+          <span className="text-slate-600">·</span>
+          <span>Affected <span className="text-white font-semibold">{affected}</span></span>
+          <span className="text-slate-600">·</span>
+          <span>Risk <span className="text-white font-semibold">{risk}</span></span>
+        </div>
       </div>
 
       <div className="flex-1 min-h-0 grid grid-cols-1 xl:grid-cols-[1.6fr_1fr] gap-4">
