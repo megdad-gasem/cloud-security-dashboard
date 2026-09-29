@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useRef } from 'react'
 import { Search, Loader2 } from 'lucide-react'
 // إعادة استخدام مكوّنات Aegis المشتركة عشان نحافظ على نفس لغة التصميم تماماً
 export { Panel, PanelHeader, SeverityChip, StatusDot, Chip } from '../infrastructure/ui'
@@ -21,7 +21,7 @@ export function PageHeader({ title, subtitle, right }) {
 // ----------------------------- StatTile ------------------------------
 export function StatTile({ icon: Icon, accent = 'bg-base-panel2 text-slate-300', title, value, sub }) {
   return (
-    <div className="bg-gray-900/80 border border-gray-800/80 rounded-xl p-3.5 min-w-0 flex items-center gap-3">
+    <div className="bg-base-panel border border-base-border rounded-xl p-3.5 min-w-0 flex items-center gap-3">
       {Icon && (
         <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${accent}`}>
           <Icon className="w-5 h-5" strokeWidth={2.1} />
@@ -162,15 +162,15 @@ export function Button({ variant = 'neutral', loading = false, disabled = false,
     </button>
   )
 }
-/** هرمية الأزرار الموحّدة — primary CTA أزرق، والباقي هادئ (ghost). */
+/** هرمية الأزرار: primary مملوء، secondary محدد بحدود، neutral نص منخفض التأكيد. */
 const ACTION_CLASS = {
   primary: 'bg-blue-600 text-white hover:bg-blue-500 text-xs px-3 py-1.5 rounded-lg font-medium',
-  secondary: 'bg-transparent text-gray-400 hover:text-white hover:bg-gray-800/60 text-xs px-2.5 py-1.5 rounded-lg transition',
+  secondary: 'border border-base-border bg-transparent text-slate-300 hover:bg-base-panel2 hover:text-slate-100 text-xs px-3 py-1.5 rounded-lg font-medium',
   danger: 'bg-red-600/90 text-white hover:bg-red-600 text-xs px-3 py-1.5 rounded-lg font-medium',
   contain: 'bg-red-600/90 text-white hover:bg-red-600 text-xs px-3 py-1.5 rounded-lg font-medium',
   success: 'bg-emerald-700/90 text-white hover:bg-emerald-700 text-xs px-3 py-1.5 rounded-lg font-medium',
   close: 'bg-emerald-700/90 text-white hover:bg-emerald-700 text-xs px-3 py-1.5 rounded-lg font-medium',
-  neutral: 'bg-transparent text-gray-400 hover:text-white hover:bg-gray-800/60 text-xs px-2.5 py-1.5 rounded-lg transition',
+  neutral: 'bg-transparent text-slate-400 hover:text-slate-100 text-xs px-1.5 py-1.5 rounded-md font-medium',
 }
 
 // ----------------------------- ActionButton --------------------------
@@ -183,10 +183,11 @@ export function ActionButton({ actionType, id, collection, onClick, disabled, va
   const isInflight = !!pa && !!id && pa.sid === `${id}::${actionType}`
   return (
     <button
+      type="button"
       onClick={onClick}
       disabled={disabled || isInflight}
       title={def.intent}
-      className={`inline-flex items-center gap-1.5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none ${ACTION_CLASS[v] || ACTION_CLASS.neutral}`}
+      className={`inline-flex items-center gap-1.5 shrink-0 select-none transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/70 focus-visible:ring-offset-2 focus-visible:ring-offset-base-bg disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none ${ACTION_CLASS[v] || ACTION_CLASS.neutral}`}
     >
       {isInflight && <Loader2 className="w-3 h-3 animate-spin" />}
       {def.label}
@@ -206,18 +207,81 @@ export function ActionRow({ actions, onAction, collection, id, className = '', v
   )
 }
 // ----------------------------- ConfirmHost ----------------------------
-/** مودال تأكيد عام لأي إجراء (confirm: true في actionTypes). */
+/**
+ * مودال تأكيد عام لأي إجراء (confirm: true في actionTypes).
+ *
+ * عندما يحتوي الـ payload.item على تفاصيل هدف (targetLabel, targetId,
+ * targetDescription) — زي الإجراءات السريعة في الداشبورد — المودال بيعرض
+ * الهدف المُحدد بوضوح بدلاً من سطر "Affected" العام.
+ */
 export function ConfirmHost() {
   useSecurityCenter()
   const c = securityCenter._confirm
+  const modalRef = useRef(null)
+  const previousFocusRef = useRef(null)
+
+  useEffect(() => {
+    if (c) {
+      previousFocusRef.current = document.activeElement
+      // focus the modal container or the primary action after it renders
+      setTimeout(() => {
+        if (modalRef.current) {
+          const focusable = modalRef.current.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')
+          if (focusable.length) {
+            focusable[focusable.length - 1].focus() // default to the primary confirm button
+          }
+        }
+      }, 10)
+    } else if (previousFocusRef.current) {
+      previousFocusRef.current.focus()
+    }
+  }, [c])
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (!c) return
+      if (e.key === 'Escape') {
+        securityCenter.confirmNo()
+      }
+      if (e.key === 'Tab' && modalRef.current) {
+        const focusable = modalRef.current.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')
+        if (!focusable.length) return
+        const first = focusable[0]
+        const last = focusable[focusable.length - 1]
+        if (e.shiftKey) {
+          if (document.activeElement === first) {
+            e.preventDefault()
+            last.focus()
+          }
+        } else {
+          if (document.activeElement === last) {
+            e.preventDefault()
+            first.focus()
+          }
+        }
+      }
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [c])
+
   if (!c) return null
   const def = c.def
   const item = c.payload && c.payload.item
-  const targetName = item
-    ? (item.id || item.name || item.principal || item.resource || item.message || item.title || '')
-    : ''
   const destructive = !!def.destructive
   const confirmVariant = destructive ? 'danger' : 'primary'
+
+  // Quick Action target-aware payload (has targetLabel + targetId)
+  const hasTarget = item && item.targetLabel
+  // Fallback for legacy / non-QuickAction confirmations
+  const legacyTargetName = !hasTarget && item
+    ? (item.id || item.name || item.principal || item.resource || item.message || item.title || '')
+    : ''
+
+  // Build the modal title: for targeted actions use a verb + target name
+  const modalTitle = hasTarget
+    ? `${def.label.replace(' Instance', '').replace(' IP Address', '').replace(' Snapshot', '')} ${item.targetLabel}?`
+    : def.label
 
   return (
     <div
@@ -225,23 +289,50 @@ export function ConfirmHost() {
       onClick={() => securityCenter.confirmNo()}
     >
       <div
-        className="w-[360px] rounded-xl border border-base-border bg-base-panel p-4 shadow-2xl"
+        ref={modalRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="confirm-modal-title"
+        className="w-[380px] rounded-xl border border-base-border bg-base-panel p-4 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <p className="text-white text-[13px] font-semibold">{def.label}</p>
-        <p className="text-slate-400 text-[11.5px] mt-2 leading-relaxed">{def.intent}</p>
+        <p id="confirm-modal-title" className="text-white text-[14px] font-semibold">{modalTitle}</p>
 
-        {targetName && (
+        {/* Action-specific target info */}
+        {hasTarget && (
+          <div className="mt-2.5 bg-slate-800/60 border border-slate-700/50 rounded-lg px-3 py-2.5">
+            <p className="text-slate-400 text-[10.5px] uppercase tracking-wider mb-1">Target</p>
+            <p className="text-white text-[12px] font-medium">
+              {item.targetLabel}
+              {item.targetId && item.targetId !== item.targetLabel && (
+                <span className="text-slate-500 font-normal ml-1.5">({item.targetId})</span>
+              )}
+            </p>
+            {item.targetStatus && (
+              <p className="text-slate-500 text-[10.5px] mt-0.5">
+                Status: <span className={item.targetStatus === 'Running' ? 'text-emerald-400' : 'text-slate-400'}>{item.targetStatus}</span>
+              </p>
+            )}
+          </div>
+        )}
+
+        {/* Target description or generic intent */}
+        <p className="text-slate-400 text-[11.5px] mt-2.5 leading-relaxed">
+          {hasTarget && item.targetDescription ? item.targetDescription : def.intent}
+        </p>
+
+        {/* Legacy "Affected" line for non-QuickAction confirmations */}
+        {legacyTargetName && (
           <p className="text-slate-500 text-[11px] mt-2">
-            Affected: <span className="text-slate-300">{targetName}</span>
+            Affected: <span className="text-slate-300">{legacyTargetName}</span>
           </p>
         )}
 
-        <div className={`mt-2.5 flex items-center gap-1.5 text-[11px] ${destructive ? 'text-red-300' : 'text-slate-400'}`}>
-          <span className={`w-1.5 h-1.5 rounded-full ${destructive ? 'bg-red-400' : 'bg-blue-400'}`} />
+        <div className={`mt-2.5 flex items-center gap-1.5 text-[11px] ${destructive ? 'text-red-300' : 'text-amber-300/70'}`}>
+          <span className={`w-1.5 h-1.5 rounded-full ${destructive ? 'bg-red-400' : 'bg-amber-400'}`} />
           {destructive
             ? 'Destructive action — changes the security state'
-            : 'This action updates the security state'}
+            : 'Backend execution is not yet available — no changes will be applied'}
         </div>
 
         <div className="flex justify-end gap-2 mt-4">
@@ -249,7 +340,7 @@ export function ConfirmHost() {
             Cancel
           </Button>
           <Button variant={confirmVariant} onClick={() => securityCenter.confirmYes()}>
-            Confirm Action
+            Confirm
           </Button>
         </div>
       </div>

@@ -43,6 +43,7 @@ function toRFNodes(topoNodes, selectedId, focusId, connectedSet) {
       position: { x: n.x, y: n.y },
       // Containers must show at correct z-level (behind cards)
       zIndex: isContainer ? 0 : 10,
+      ariaLabel: `${isContainer ? 'Container' : 'Node'} ${n.label} of type ${n.type || n.kind}`,
       data: {
         ...n,
         dimmed,

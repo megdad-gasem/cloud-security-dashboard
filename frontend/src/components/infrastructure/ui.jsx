@@ -39,6 +39,7 @@ export function Chip({ active = false, onClick, className = '', children }) {
     <button
       type="button"
       onClick={onClick}
+      aria-pressed={active}
       className={`px-2.5 py-1 rounded-md text-[11.5px] font-medium border transition-colors shrink-0
         ${active
           ? 'bg-blue-600/20 text-blue-300 border-blue-500/40'
@@ -77,7 +78,11 @@ export function StatusDot({ status, className = '' }) {
     stopped: 'bg-slate-500',
   }
   const dot = map[status] || 'bg-slate-500'
-  return <span className={`inline-block w-2 h-2 rounded-full ${dot} ${className}`} />
+  return (
+    <span className={`inline-block w-2 h-2 rounded-full ${dot} ${className}`} title={`Status: ${status}`}>
+      <span className="sr-only">{status}</span>
+    </span>
+  )
 }
 
 /** حالة أمنية صغيرة (للأيقونات / لويس الشارت) */

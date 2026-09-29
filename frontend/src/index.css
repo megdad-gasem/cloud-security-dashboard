@@ -4,13 +4,27 @@
 @tailwind components;
 @tailwind utilities;
 
+/* =====================================================================
+   Aegis theme tokens.
+   DEFAULT (:root) = الـ DARK palette الحالية — بتفضل كما هي بالحرف.
+   Light Mode = opt-in فقط عبر كلاس `light` على <html> (html.light تحت).
+   `base.*` في tailwind.config بيقرأ المتغيرات دي بصيغة RGB channels عشان
+   opacity modifiers (bg-base-panel2/60 …) تشتغل في الثيمين.
+   ===================================================================== */
+:root {
+  --aegis-bg: 9 18 31;      /* #09121F */
+  --aegis-panel: 14 26 43;  /* #0E1A2B */
+  --aegis-panel2: 16 29 48; /* #101D30 */
+  --aegis-border: 27 40 57; /* #1B2839 */
+}
+
 /* منع أي scroll على مستوى الصفحة كاملة - الداشبورد لازم يطابق الشاشة بالظبط */
 html, body, #root {
   height: 100%;
   margin: 0;
   padding: 0;
   overflow: hidden;
-  background-color: #09121F;
+  background-color: rgb(var(--aegis-bg));
 }
 
 body {
@@ -86,3 +100,115 @@ body {
   border-radius: 8px !important;
   overflow: hidden;
 }
+
+/* =====================================================================
+   LIGHT MODE — opt-in فقط (html.light). كل القواعد هنا مقيّدة بـ .light
+   عشان الـ DARK MODE يفضل كما هو بالحرف (لا يتغير أي كلاس داكن).
+   Light = نفس منتج Aegis بأسطح فاتحة محايدة باردة + نفس عائلة الأزرق
+   + نفس الألوان السيمانتيك للـ severity/status.
+   ===================================================================== */
+
+/* ----- Surfaces (CSS variables flip) ----- */
+html.light {
+  --aegis-bg: 248 250 252;      /* slate-50 — very light cool neutral page bg */
+  --aegis-panel: 255 255 255;   /* white — cards/panels */
+  --aegis-panel2: 241 245 249;  /* slate-100 — inner surfaces/inputs/rows */
+  --aegis-border: 226 232 240;  /* slate-200 — subtle light borders */
+  background-color: rgb(var(--aegis-bg));
+}
+html.light body,
+html.light #root {
+  background-color: rgb(var(--aegis-bg));
+}
+
+/* ----- Primary text (headings/values were white) ----- */
+html.light .text-white { color: #0f172a; }
+html.light .text-slate-100 { color: #0f172a; }
+html.light .text-slate-200 { color: #1e293b; }
+html.light .text-slate-300 { color: #334155; }
+
+/* ----- Secondary / metadata text (readable on light) ----- */
+html.light .text-slate-400 { color: #64748b; }
+html.light .text-slate-500 { color: #64748b; }
+html.light .text-slate-600 { color: #475569; }
+html.light .text-gray-400 { color: #64748b; }
+
+/* Solid accent fills keep white text in light mode
+   (buttons, badges, active nav — نفس العناصر بنفس الخلفيات) */
+html.light .bg-blue-600.text-white,
+html.light .bg-red-600\/90.text-white,
+html.light .bg-emerald-700\/90.text-white,
+html.light .bg-red-500.text-white,
+html.light :is(.bg-blue-600, .bg-red-500, .bg-red-600\/90, .bg-emerald-700\/90) .text-white { color: #ffffff; }
+
+/* Hover text states — darken instead of lighten */
+html.light .hover\:text-white:hover { color: #0f172a; }
+html.light .hover\:text-slate-100:hover,
+html.light .hover\:text-slate-200:hover { color: #0f172a; }
+html.light .hover\:text-slate-300:hover { color: #1e293b; }
+
+/* ----- Semantic text — نفس العائلات، درجات أغمق للقراءة على الفاتح ----- */
+html.light .text-blue-300,
+html.light .text-blue-400 { color: #1d4ed8; }
+html.light .text-sky-400 { color: #0284c7; }
+html.light .text-cyan-400 { color: #0891b2; }
+html.light .text-emerald-400 { color: #059669; }
+html.light .text-green-400 { color: #16a34a; }
+html.light .text-teal-400 { color: #0d9488; }
+html.light .text-red-400,
+html.light .text-red-300 { color: #dc2626; }
+html.light .text-red-200 { color: #b91c1c; }
+html.light .text-rose-400 { color: #e11d48; }
+html.light .text-amber-400,
+html.light .text-amber-300,
+html.light .text-amber-200 { color: #b45309; }
+html.light .text-green-200 { color: #166534; }
+html.light .text-purple-300 { color: #7c3aed; }
+html.light .text-purple-400 { color: #9333ea; }
+html.light .text-orange-400 { color: #ea580c; }
+html.light .text-lime-400 { color: #4d7c0f; }
+html.light .text-fuchsia-400 { color: #c026d3; }
+
+/* ----- Neutral surfaces hardcoded dark (cards/stat tiles/active cards) ----- */
+html.light .bg-gray-900\/80 { background-color: rgba(255, 255, 255, 0.92); }
+html.light .bg-gray-950\/40 { background-color: #eff6ff; }
+html.light .bg-gray-800\/60,
+html.light .hover\:bg-gray-800\/60:hover { background-color: rgba(15, 23, 42, 0.05); }
+html.light .bg-gray-800\/40,
+html.light .hover\:bg-gray-800\/40:hover { background-color: rgba(15, 23, 42, 0.04); }
+html.light .bg-slate-700 { background-color: #cbd5e1; }
+html.light .hover\:bg-white\/5:hover { background-color: rgba(15, 23, 42, 0.04); }
+
+/* ----- Borders / dividers hardcoded dark ----- */
+html.light .border-gray-800\/80 { border-color: #e2e8f0; }
+html.light .border-gray-800 { border-color: #e5e7eb; }
+html.light .divide-gray-800\/80 > :not([hidden]) ~ :not([hidden]) { border-color: #e2e8f0; }
+html.light .border-slate-700 { border-color: #e2e8f0; }
+html.light .border-slate-600 { border-color: #cbd5e1; }
+html.light .hover\:border-slate-600:hover { border-color: #94a3b8; }
+
+/* ----- Charts (Recharts) — CSS يغلب presentation attributes ----- */
+html.light .recharts-cartesian-grid-horizontal line,
+html.light .recharts-cartesian-grid-vertical line { stroke: #e2e8f0; }
+html.light .recharts-cartesian-axis-line { stroke: #cbd5e1; }
+html.light .recharts-radial-bar-background-sector,
+html.light .recharts-radial-bar-background-rectangle { fill: #e2e8f0; }
+
+/* ----- React Flow light ----- */
+html.light .aegis-reactflow { background: #f8fafc !important; }
+html.light .react-flow__edge-path { stroke: #cbd5e1; }
+html.light .react-flow__background pattern circle,
+html.light .react-flow__background pattern path { fill: #cbd5e1; }
+html.light .aegis-rf-controls button {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  color: #64748b !important;
+}
+html.light .aegis-rf-controls button:hover {
+  background: #f1f5f9 !important;
+  color: #0f172a !important;
+  border-color: #cbd5e1 !important;
+}
+
+/* ----- Scrollbar light ----- */
+html.light .thin-scrollbar::-webkit-scrollbar-thumb { background-color: #cbd5e1; }

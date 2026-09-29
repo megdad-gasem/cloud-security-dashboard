@@ -1,9 +1,13 @@
 import React from 'react'
-import { Calendar, RefreshCw, ChevronDown } from 'lucide-react'
+import { Calendar, RefreshCw } from 'lucide-react'
+import { emitRefresh } from '../utils/refreshBus'
 
 /**
  * DashboardHeader
- * صف العنوان: "Dashboard" + الوصف من الشمال، وفلتر الوقت + زر التحديث من اليمين
+ * صف العنوان: "Dashboard" + الوصف من الشمال، ومؤشر الفترة + زر التحديث من اليمين
+ *
+ * ملاحظة Phase 1: مؤشر الفترة ثابت/غير تفاعلي (لا توجد بيانات زمنية للفلترة)،
+ * وزر Refresh فعلي — بيعيد جلب بانلات الداشبورد عبر حافلة التحديث.
  */
 export default function DashboardHeader() {
   return (
@@ -14,12 +18,15 @@ export default function DashboardHeader() {
       </div>
 
       <div className="flex items-center gap-3">
-        <button className="flex items-center gap-2 bg-base-panel2 border border-base-border rounded-lg px-3 py-2 text-[13px] text-slate-300">
+        <span className="flex items-center gap-2 bg-base-panel2 border border-base-border rounded-lg px-3 py-2 text-[13px] text-slate-300 select-none">
           <Calendar className="w-3.5 h-3.5 text-slate-500" />
           Last 24 hours
-          <ChevronDown className="w-3.5 h-3.5 text-slate-500" />
-        </button>
-        <button className="w-9 h-9 flex items-center justify-center rounded-lg bg-blue-600 hover:bg-blue-500 transition-colors">
+        </span>
+        <button
+          onClick={() => emitRefresh()}
+          title="Refresh dashboard data"
+          className="w-9 h-9 flex items-center justify-center rounded-lg bg-blue-600 hover:bg-blue-500 transition-colors"
+        >
           <RefreshCw className="w-4 h-4 text-white" />
         </button>
       </div>

@@ -75,9 +75,21 @@ class SecurityCenterStore {
     this._toastTimer = null
     this._subs = new Set()
     this._navHandler = null
+    this.ui = {}
   }
 
   /** Toast عام مرئي على كل الصفحات (مش محتاج React context) */
+  // ---------- view context (persists across page navigation) ----------
+  // Logs/Incidents selection + filters live here so unmounting a page
+  // (App renders one page at a time) never loses the investigation context.
+  uiGet(key, fallback) {
+    const v = this.ui[key]
+    return v === undefined ? fallback : v
+  }
+  uiSet(key, value) {
+    this.ui[key] = value
+  }
+
   showToast(message, tone = 'success') {
     if (this._toastTimer) clearTimeout(this._toastTimer)
     this.toast = { message, tone, id: Date.now() }
@@ -176,8 +188,8 @@ class SecurityCenterStore {
           time: this.nowStr(),
           actor: 'aegis',
           action: type,
-          target: target ? (target.id || target.name || target.principal || target.message || '—') : collection,
-          result: 'success',
+          target: result.target || (target ? (target.targetLabel || target.id || target.name || target.principal || target.message || '—') : collection),
+          result: result.outcome || 'success',
           detail: result.message,
         })
         this._processing = false

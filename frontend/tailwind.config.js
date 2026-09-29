@@ -7,12 +7,15 @@ export default {
   theme: {
     extend: {
       colors: {
-        // ألوان الخلفية الأساسية (Dark Navy) مطابقة لتصميم الفيقما
+        // ألوان الخلفية الأساسية — Dark Navy هو الافتراضي (المصدر).
+        // Light Mode بيطبَّق عبر CSS variables في index.css (html.light) بدون
+        // أي تغيير في الكلاسات أو المكونات. القيم الافتراضية هنا = القيم
+        // الداكنة الأصلية بالحرف، فالـ Dark Mode يبقى كما هو تمامًا.
         base: {
-          bg: '#09121F',      // خلفية الصفحة الرئيسية
-          panel: '#0E1A2B',   // خلفية الكروت/البانلات
-          panel2: '#101D30',  // خلفية عناصر داخلية (صفوف الجدول، الأزرار الثانوية)
-          border: '#1B2839',  // لون الحدود العام
+          bg: 'rgb(var(--aegis-bg) / <alpha-value>)',
+          panel: 'rgb(var(--aegis-panel) / <alpha-value>)',
+          panel2: 'rgb(var(--aegis-panel2) / <alpha-value>)',
+          border: 'rgb(var(--aegis-border) / <alpha-value>)',
         },
         // ألوان الحالة (Status Colors)
         status: {

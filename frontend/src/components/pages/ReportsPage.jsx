@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { FileText, ClipboardCheck, AlertCircle, Bug } from 'lucide-react'
 import { PageHeader, Panel, PanelHeader, StatTile, StatusText, Button } from './ui'
 import { securityCenter, useSecurityCenter } from '../../store/securityCenter'
@@ -9,10 +9,7 @@ const TYPE_LABEL = { Executive: 'Executive', Compliance: 'Compliance', Incident:
 export default function ReportsPage() {
   useSecurityCenter()
   const state = securityCenter.state
-  const [generating, setGenerating] = useState(false)
-
   const handleGenerate = (type) => {
-    setGenerating(true)
     // requestAction → store.addReport (simulated backend) → appears in history + audit.
     securityCenter.requestAction({
       collection: 'reports',
@@ -20,7 +17,7 @@ export default function ReportsPage() {
       actionType: 'generate_report',
       item: { name: `${type} — ${securityCenter.nowStr()}` },
       meta: { type },
-    }).finally(() => setGenerating(false))
+    })
   }
 
   const handleDownload = (r) =>
@@ -38,15 +35,6 @@ export default function ReportsPage() {
       <PageHeader
         title="Reports"
         subtitle="Security posture summaries and report history"
-        right={
-          <Button
-            variant="primary"
-            onClick={() => handleGenerate('Executive')}
-            disabled={generating || securityCenter.processing}
-          >
-            {generating ? 'Generating…' : 'Generate Report'}
-          </Button>
-        }
       />
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 shrink-0">

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
 import {
   ShieldAlert,
   UserCog,
@@ -7,6 +7,9 @@ import {
   CheckCircle2,
 } from 'lucide-react'
 import { getSecurityEvents } from '../services/api'
+import { navigate } from '../store/securityCenter'
+import { subscribeRefresh } from '../utils/refreshBus'
+import { SeverityChip } from './pages/ui'
 
 const EVENT_ICONS = [
   ShieldAlert,
@@ -21,13 +24,6 @@ const DOT_COLOR = {
   MEDIUM: 'bg-amber-500',
   LOW: 'bg-blue-500',
   CRITICAL: 'bg-red-500',
-}
-
-const SEVERITY_TEXT = {
-  HIGH: 'text-red-400',
-  MEDIUM: 'text-amber-400',
-  LOW: 'text-slate-400',
-  CRITICAL: 'text-red-400',
 }
 
 const formatRelativeTime = (dateString) => {
@@ -61,19 +57,26 @@ export default function SecurityEvents() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
-  useEffect(() => {
-    getSecurityEvents()
-      .then((data) => {
-        setEvents(data)
-        setLoading(false)
-      })
-      .catch((error) => {
-        console.error('SECURITY EVENTS ERROR:', error)
-        setError(error.message)
-        setLoading(false)
-      })
+  const load = useCallback(async () => {
+    setLoading(true)
+    try {
+      const data = await getSecurityEvents()
+      setEvents(data)
+      setError(null)
+    } catch (err) {
+      console.error('SECURITY EVENTS ERROR:', err)
+      setError(err.message || 'Failed to load security events')
+    } finally {
+      setLoading(false)
+    }
   }, [])
 
+  useEffect(() => {
+    load()
+    // زر Refresh في DashboardHeader بيعيد الجلب من خلال حافلة التحديث
+    const unsubscribe = subscribeRefresh(load)
+    return unsubscribe
+  }, [load])
   return (
     <div className="bg-base-panel border border-base-border rounded-xl p-4 flex flex-col h-full min-h-0">
 
@@ -82,7 +85,11 @@ export default function SecurityEvents() {
           Recent Security Events
         </h3>
 
-        <button className="text-blue-400 text-[12px] hover:underline">
+        {/* بيفتح صفحة Logs الفعلية — مش زر شكلي */}
+        <button
+          onClick={() => navigate('logs')}
+          className="text-blue-400 text-[12px] hover:underline"
+        >
           View all
         </button>
       </div>
@@ -96,14 +103,19 @@ export default function SecurityEvents() {
         )}
 
         {error && (
-          <p className="text-red-400 text-[12px] py-4">
-            {error}
-          </p>
+          <div className="py-4">
+            <p className="text-red-400 text-[12px]">
+              {error}
+            </p>
+            <button onClick={load} className="mt-1 text-blue-400 text-[12px] hover:underline">Retry</button>
+          </div>
         )}
 
         {!loading && !error && events.map((event, idx) => {
           const Icon = EVENT_ICONS[idx % EVENT_ICONS.length]
-          const severity = event.severity?.toUpperCase() || 'LOW'
+          const severityRaw = event.severity || 'Low'
+          const severityTitleCase = severityRaw.charAt(0).toUpperCase() + severityRaw.slice(1).toLowerCase()
+          const severityUpper = severityRaw.toUpperCase()
 
           return (
             <div
@@ -113,7 +125,7 @@ export default function SecurityEvents() {
 
               <span
                 className={`w-1.5 h-1.5 rounded-full shrink-0 ${
-                  DOT_COLOR[severity] || 'bg-slate-400'
+                  DOT_COLOR[severityUpper] || 'bg-slate-400'
                 }`}
               />
 
@@ -133,15 +145,9 @@ export default function SecurityEvents() {
               </div>
 
               <div className="text-right shrink-0">
-                <p
-                  className={`text-[11.5px] font-medium ${
-                    SEVERITY_TEXT[severity] || 'text-slate-400'
-                  }`}
-                >
-                  {severity}
-                </p>
+                <SeverityChip severity={severityTitleCase} />
 
-                <p className="text-slate-600 text-[10.5px]">
+                <p className="text-slate-600 text-[10.5px] mt-1">
                   {formatRelativeTime(event.detected_at)}
                 </p>
               </div>

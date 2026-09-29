@@ -1,6 +1,6 @@
-import React, { useMemo, useState } from 'react'
+import React, { useMemo, useState, useEffect } from 'react'
 import { ScrollText, Search } from 'lucide-react'
-import { PageHeader, Panel, PanelHeader, SearchInput, ActionRow, ActionButton, SeverityChip, StatusText } from './ui'
+import { PageHeader, Panel, PanelHeader, SearchInput, ActionRow, ActionButton, SeverityChip, StatusText, Chip } from './ui'
 import { securityCenter, useSecurityCenter } from '../../store/securityCenter'
 
 const SEV_DOT = { Critical: 'bg-red-500', High: 'bg-red-400', Medium: 'bg-amber-500', Low: 'bg-blue-500', Info: 'bg-slate-400' }
@@ -44,9 +44,16 @@ function Field({ label, value, mono }) {
 export default function LogsPage() {
   useSecurityCenter()
   const state = securityCenter.state
-  const [q, setQ] = useState('')
-  const [source, setSource] = useState('All')
-  const [selected, setSelected] = useState(state.logs[0]?.id || null)
+  const [q, setQ] = useState(() => securityCenter.uiGet('logs.q', ''))
+  const [source, setSource] = useState(() => securityCenter.uiGet('logs.source', 'All'))
+  const [selected, setSelected] = useState(() => securityCenter.uiGet('logs.selected', state.logs[0]?.id || null))
+
+  // Persist investigation context (search / source / selected event) across page navigation
+  useEffect(() => {
+    securityCenter.uiSet('logs.q', q)
+    securityCenter.uiSet('logs.source', source)
+    securityCenter.uiSet('logs.selected', selected)
+  }, [q, source, selected])
 
   const logs = state.logs
   const filtered = useMemo(
@@ -79,13 +86,7 @@ export default function LogsPage() {
           <SearchInput value={q} onChange={setQ} placeholder="Search events, IDs, sources, resources…" />
           <div className="flex items-center gap-1.5 overflow-x-auto thin-scrollbar">
             {SOURCES.map((s) => (
-              <button
-                key={s}
-                onClick={() => setSource(s)}
-                className={`px-2.5 py-1 rounded-md text-[11px] font-medium border transition-colors shrink-0 ${source === s ? 'bg-blue-600/20 text-blue-300 border-blue-500/40' : 'bg-base-panel2 text-slate-400 border-base-border hover:text-slate-200'}`}
-              >
-                {s}
-              </button>
+              <Chip key={s} active={source === s} onClick={() => setSource(s)}>{s}</Chip>
             ))}
           </div>
         </div>

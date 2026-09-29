@@ -1,12 +1,12 @@
 import React from 'react'
 import { RefreshCw, ChevronDown, Radio } from 'lucide-react'
 
-const ENVS = ['All', 'Production', 'Staging', 'Development']
-
 /**
  * MonitoringPageHeader — عنوان صفحة الـ Monitoring + تحديث + آخر تحديث
  * + محدد البيئة + مؤشر/تبديل auto-refresh (شكليًا في الوقت الحالي).
  */
+const ENVS = ['All', 'Production', 'Staging', 'Development']
+
 export default function MonitoringPageHeader({ refreshing, lastUpdated, onRefresh, environment, onEnvironment, autoRefresh, onAutoRefresh }) {
   return (
     <div className="flex items-center justify-between gap-4">
@@ -58,3 +58,4 @@ export default function MonitoringPageHeader({ refreshing, lastUpdated, onRefres
     </div>
   )
 }
+

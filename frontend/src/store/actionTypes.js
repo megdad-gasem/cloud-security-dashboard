@@ -133,4 +133,37 @@ export const ACTION_TYPES = {
     id: 'export_report', label: 'Export Report', hier: 'neutral', tone: 'neutral',
     intent: 'Export the report to an external destination.', confirm: false, destructive: false,
   },
-}
+
+  // ---- Dashboard Quick Actions ----
+  // Shortcuts on the Dashboard. Backend execution is NOT wired yet: the
+  // confirm flow honestly reports that no changes were applied.
+  isolate_instance: {
+    id: 'isolate_instance', label: 'Isolate Instance', hier: 'secondary', tone: 'warning',
+    intent: 'Isolate the selected instance from network access. Backend execution is not yet available for this action - no changes will be applied.',
+    confirm: true, destructive: false,
+  },
+  create_snapshot: {
+    id: 'create_snapshot', label: 'Create Snapshot', hier: 'secondary', tone: 'success',
+    intent: 'Create a backup snapshot of the selected resource. Backend execution is not yet available for this action - no changes will be applied.',
+    confirm: true, destructive: false,
+  },
+  block_ip: {
+    id: 'block_ip', label: 'Block IP Address', hier: 'secondary', tone: 'warning',
+    intent: 'Block the identified IP address from further access attempts. Backend execution is not yet available for this action - no changes will be applied.',
+    confirm: true, destructive: false,
+  },
+  restart_instance: {
+    id: 'restart_instance', label: 'Restart Instance', hier: 'secondary', tone: 'warning',
+    intent: 'Restart the selected instance. Backend execution is not yet available for this action - no changes will be applied.',
+    confirm: true, destructive: false,
+  },
+  send_notification: {
+    id: 'send_notification', label: 'Send Notification', hier: 'secondary', tone: 'neutral',
+    intent: 'Send an alert notification to the security team. Backend execution is not yet available for this action - no changes will be applied.',
+    confirm: true, destructive: false,
+  },
+  view_logs: {
+    id: 'view_logs', label: 'View Logs', hier: 'primary', tone: 'neutral',
+    intent: 'Open the Logs investigation workspace.',
+    confirm: false, destructive: false, navigate: 'logs',
+  },}

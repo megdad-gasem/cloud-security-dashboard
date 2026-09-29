@@ -1,6 +1,6 @@
-import React, { useMemo, useState } from 'react'
-import { ShieldAlert, AlertTriangle, Bug, Boxes, Radio, Filter, History } from 'lucide-react'
-import { PageHeader, Panel, PanelHeader, StatTile, SeverityChip, DistributionBar, ActionRow } from './ui'
+import React, { useState } from 'react'
+import { ShieldAlert, AlertTriangle, Bug, Boxes, Radio, Filter } from 'lucide-react'
+import { PageHeader, Panel, PanelHeader, StatTile, SeverityChip, DistributionBar, ActionButton, Chip } from './ui'
 import { securityCenter, useSecurityCenter, navigate } from '../../store/securityCenter'
 
 const SEV_COLOR = { Critical: 'bg-red-500', High: 'bg-red-400', Medium: 'bg-amber-500', Low: 'bg-blue-500' }
@@ -16,14 +16,21 @@ function findingActions(f) {
   return ['remediate', 'investigate_finding', 'view_resource', 'accept_risk']
 }
 
-// Map severity color to Tailwind utility class
-function sevClass(sev) {
-  return {
-    Critical: 'bg-red-500/20 border-red-500/40',
-    High: 'bg-red-400/20 border-red-400/30',
-    Medium: 'bg-amber-500/20 border-amber-500/30',
-    Low: 'bg-blue-500/20 border-blue-500/40',
-  }[sev] || 'bg-slate-500/20 border-slate-500/30'
+// Visual emphasis only — does not change membership, labels, or engine behavior.
+function findingActionVariant(status, actionType) {
+  if (status === 'Remediated') {
+    return actionType === 'verify' ? 'primary' : 'neutral'
+  }
+  if (status === 'Investigating') {
+    if (actionType === 'remediate') return 'primary'
+    if (actionType === 'verify') return 'secondary'
+    return 'neutral'
+  }
+  if (status === 'Resolved' || status === 'Accepted') return 'neutral'
+  // Open
+  if (actionType === 'remediate') return 'primary'
+  if (actionType === 'investigate_finding') return 'secondary'
+  return 'neutral'
 }
 
 // Status is a workflow state, NOT a severity — it must never compete with the
@@ -102,13 +109,7 @@ export default function SecurityPage() {
             <div className="flex items-center gap-1.5">
               <Filter className="w-3.5 h-3.5 text-slate-500" />
               {levels.map((l) => (
-                <button
-                  key={l}
-                  onClick={() => setSev(l)}
-                  className={`px-2 py-0.5 rounded text-[11px] font-medium border transition-colors ${sev === l ? 'bg-blue-600/20 text-blue-300 border-blue-500/40' : 'bg-base-panel2 text-slate-400 border-base-border hover:text-slate-200'}`}
-                >
-                  {l}
-                </button>
+                <Chip key={l} active={sev === l} onClick={() => setSev(l)}>{l}</Chip>
               ))}
             </div>
           </div>
@@ -122,9 +123,20 @@ export default function SecurityPage() {
                   <span className="text-slate-500 text-[11px] truncate ml-auto">{f.source} · {f.detected}</span>
                 </div>
                 <p className="text-slate-100 text-[13px] font-medium mt-1 truncate">{f.title}</p>
-                <p className="text-slate-500 text-[11.5px] truncate">Resource: <span className="text-slate-400">{f.resource}</span> · {f.resourceType}</p>
-                <div className="mt-1.5">
-                  <ActionRow collection="findings" id={f.id} actions={findingActions(f)} onAction={onAction(f)} />
+                <p className="text-slate-500 text-[11.5px] truncate">Resource: <span className="text-slate-400">{f.resource}</span> - {f.resourceType}</p>
+                <div className="mt-2">
+                  <div className="flex flex-wrap items-center gap-2">
+                    {findingActions(f).map((a) => (
+                      <ActionButton
+                        key={a}
+                        actionType={a}
+                        collection="findings"
+                        id={f.id}
+                        variant={findingActionVariant(f.status, a)}
+                        onClick={() => onAction(f)(a)}
+                      />
+                    ))}
+                  </div>
                 </div>
               </div>
             ))}
@@ -140,7 +152,7 @@ export default function SecurityPage() {
               <div className="flex items-center justify-between mt-2 text-[11px]">
                 {distribution.map((d) => (
                   <span key={d.label} className={`flex items-center gap-1 ${SEV_LABEL[d.label] || 'text-slate-400'}`}>
-                    <span className={`w-2 h-2 rounded-full ${sevClass(d.color)}`} />{d.label} {d.value}
+                    <span className={`w-2 h-2 rounded-full ${d.color}`} />{d.label} {d.value}
                   </span>
                 ))}
               </div>
@@ -154,7 +166,7 @@ export default function SecurityPage() {
                 <div key={a.id} className="flex items-center gap-2.5 px-1.5 py-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-blue-400 shrink-0" />
                   <div className="flex-1 min-w-0">
-                    <p className="text-slate-200 text-[11.5px] truncate"><span className="font-medium capitalize">{a.action.replace(/_/g, ' ')}</span> · {a.target}</p>
+                    <p className="text-slate-200 text-[11.5px] truncate"><span className="font-medium capitalize">{a.action.replace(/_/g, ' ')}</span> - {a.target}</p>
                     <p className="text-slate-500 text-[10.5px]">{a.detail}</p>
                   </div>
                   <span className="text-slate-400 text-[11px] shrink-0">{a.time}</span>

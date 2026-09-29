@@ -25,19 +25,29 @@ function AegisCardNode({ data, selected }) {
           <Icon className={`w-4 h-4 ${acc} shrink-0`} strokeWidth={2} />
           <span className="flex items-center gap-1">
             {data.status && (
-              <span className={`w-1.5 h-1.5 rounded-full ${
-                data.status === 'warning' ? 'bg-amber-400' : data.status === 'critical' ? 'bg-red-500' : 'bg-green-400'
-              }`} />
+              <span 
+                className={`w-1.5 h-1.5 rounded-full ${
+                  data.status === 'warning' ? 'bg-amber-400' : data.status === 'critical' ? 'bg-red-500' : 'bg-green-400'
+                }`}
+                title={`Status: ${data.status}`}
+              >
+                <span className="sr-only">Status: {data.status}</span>
+              </span>
             )}
             {data.security && (
-              <span className={`w-1.5 h-1.5 rounded-full ${
-                data.security === 'warning' ? 'bg-amber-400' : data.security === 'critical' ? 'bg-red-500' : 'bg-green-400'
-              }`} />
+              <span 
+                className={`w-1.5 h-1.5 rounded-full ${
+                  data.security === 'warning' ? 'bg-amber-400' : data.security === 'critical' ? 'bg-red-500' : 'bg-green-400'
+                }`}
+                title={`Security: ${data.security}`}
+              >
+                <span className="sr-only">Security: {data.security}</span>
+              </span>
             )}
           </span>
         </div>
         <p className="text-slate-200 text-[11.5px] font-medium leading-tight truncate mt-1">{data.label}</p>
-        <p className="text-slate-500 text-[9.5px] leading-tight truncate">{data.type}</p>
+        <p className="text-slate-500 text-[11px] leading-tight truncate">{data.type}</p>
       </div>
       <Handle type="source" position={Position.Bottom} className="!w-2 !h-2 !bg-slate-600 !border-slate-500" />
     </>
@@ -69,7 +79,7 @@ function AegisContainerNode({ data, selected }) {
       >
         <div className={`flex items-center gap-2 px-3 h-7 border-b ${cs.border}`}>
           <Icon className={`w-3.5 h-3.5 ${cs.text}`} strokeWidth={2} />
-          <span className={`text-[10px] font-semibold ${cs.text}`}>{cs.label} — {data.label}</span>
+          <span className={`text-[11px] font-semibold ${cs.text}`}>{cs.label} — {data.label}</span>
         </div>
       </div>
       <Handle type="source" position={Position.Bottom} className="!w-2 !h-2 !bg-slate-600 !border-slate-500" />

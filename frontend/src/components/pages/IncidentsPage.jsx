@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { AlertCircle, ListFilter } from 'lucide-react'
 import { PageHeader, Panel, PanelHeader, StatTile, SeverityChip, StatusText, ActionRow, ActionButton } from './ui'
 import { securityCenter, useSecurityCenter } from '../../store/securityCenter'
@@ -61,7 +61,12 @@ function recommendedAction(inc) {
 export default function IncidentsPage() {
   useSecurityCenter()
   const state = securityCenter.state
-  const [selectedId, setSelectedId] = useState(state.incidents[0]?.id || null)
+  const [selectedId, setSelectedId] = useState(() => securityCenter.uiGet('incidents.selectedId', state.incidents[0]?.id || null))
+
+  // Persist the selected incident across page navigation
+  useEffect(() => {
+    securityCenter.uiSet('incidents.selectedId', selectedId)
+  }, [selectedId])
 
   const incidents = state.incidents
   const selected = incidents.find((i) => i.id === selectedId) || incidents[0] || null
@@ -128,7 +133,7 @@ export default function IncidentsPage() {
               <>
                 {/* Severity + status (status never uses severity color) */}
                 <div className="flex items-center gap-2">
-                  <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold border ${SEV_BADGE[selected.severity] || 'bg-slate-500/15 text-slate-300 border-slate-500/30'}`}>{selected.severity}</span>
+                  <SeverityChip severity={selected.severity} />
                   <IncidentStatus status={selected.status} />
                 </div>
                 <p className="text-slate-100 text-[14px] font-semibold">{selected.title}</p>
@@ -223,9 +228,3 @@ export default function IncidentsPage() {
 }
 
 const SEV_DOT = { Critical: 'bg-red-500', High: 'bg-red-400', Medium: 'bg-amber-500', Low: 'bg-blue-500' }
-const SEV_BADGE = {
-  Critical: 'bg-red-500/15 text-red-400 border-red-500/30',
-  High: 'bg-red-400/15 text-red-400 border-red-400/30',
-  Medium: 'bg-amber-500/15 text-amber-400 border-amber-500/30',
-  Low: 'bg-blue-500/15 text-blue-400 border-blue-500/30',
-}

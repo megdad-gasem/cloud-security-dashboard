@@ -1,12 +1,12 @@
 import React from 'react'
-import { MoreVertical, ChevronsLeft, ChevronsRight } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { getInstances } from '../services/api'
+import { subscribeRefresh } from '../utils/refreshBus'
 // شريط تقدم صغير (CPU / Memory) بلون متغير حسب النسبة
 // ملاحظة: CPU/Memory مش سمات محفوظة على الـ Instance ولا بترجع من /api/instances
 // حالياً (الرد بيحتوي name/public_ip/status بس). دول مقاييس مراقبة حية مستقبلية
 // (مثلاً CloudWatch). لما الـ API يرجّع أرقام حقيقية cpu/memory، الـ bar هيترسم
-// تلقائياً. لحد ما يجهز، لو المقياس مش متاح (undefined/null) بنعرض "—" محايد
+// تلقائياً. لحد ما يجهز، لو المقياس مش متاح (undefined/null) بنعرض شرطة محايدة
 // بدل ما نرسم بار 0% مضلِّل.
 function UsageBar({ value, active }) {
   const hasMetric = typeof value === 'number' && !Number.isNaN(value)
@@ -34,29 +34,48 @@ function UsageBar({ value, active }) {
 
 /**
  * InstancesTable
- * كارت جدول "EC2 Instances" - قائمة بالسيرفرات مع الحالة، استخدام الموارد، وأزرار إجراءات
+ * كارت جدول "EC2 Instances" - قائمة بالسيرفرات مع الحالة، استخدام الموارد
+ *
+ * منطق الحالات: تحميل / بيانات / فشل — الفشل لا يُعرض ابدا كجدول فارغ
+ * بقيم صفر، بل كصف خطأ واضح مع زر Retry.
  */
 export default function InstancesTable() {
 
-    const [instances, setInstances] = useState([])
+  const [instances, setInstances] = useState([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+
+  const load = useCallback(async () => {
+    setLoading(true)
+    try {
+      const data = await getInstances()
+      setInstances(data)
+      setError(null)
+    } catch (err) {
+      console.error('INSTANCES ERROR:', err)
+      setError(err.message || 'Instances data unavailable')
+    } finally {
+      setLoading(false)
+    }
+  }, [])
 
   useEffect(() => {
-    getInstances()
-      .then((data) => {
-        setInstances(data)
-        setLoading(false)
-      })
-      .catch((error) => {
-        console.error('INSTANCES ERROR:', error)
-        setLoading(false)
-      })
-  }, [])
+    load()
+    // زر Refresh في DashboardHeader بيعيد الجلب من خلال حافلة التحديث
+    const unsubscribe = subscribeRefresh(load)
+    return unsubscribe
+  }, [load])
+  // نص التذييل — صادق دائما: عدد حقيقي، أو صفر حقيقي، أو شرطة عند الفشل
+  const summary = error
+    ? '---'
+    : instances.length === 0
+      ? 'No instances'
+      : `Showing all ${instances.length} result${instances.length === 1 ? '' : 's'}`
+
   return (
     <div className="bg-base-panel border border-base-border rounded-xl p-4 flex flex-col h-full min-h-0">
       <div className="flex items-center justify-between shrink-0">
         <h3 className="text-white text-[14px] font-semibold">EC2 Instances</h3>
-        <button className="text-blue-400 text-[12px] hover:underline">View all</button>
       </div>
 
       <div className="flex-1 min-h-0 mt-2 overflow-y-auto thin-scrollbar">
@@ -69,11 +88,33 @@ export default function InstancesTable() {
               <th className="font-medium pb-2 pr-2">CPU</th>
               <th className="font-medium pb-2 pr-2">Memory</th>
               <th className="font-medium pb-2 pr-2">Public IP</th>
-              <th className="font-medium pb-2 pr-2">Actions</th>
             </tr>
           </thead>
           <tbody>
-            {instances.map((inst) => {
+            {loading && !error && (
+              <tr>
+                <td colSpan={6} className="py-4 text-slate-500 text-[12px]">Loading instances...</td>
+              </tr>
+            )}
+
+            {error && (
+              <tr>
+                <td colSpan={6} className="py-4">
+                  <div className="flex items-center gap-2">
+                    <span className="text-amber-400 text-[12px]">{error}</span>
+                    <button onClick={load} className="text-blue-400 text-[12px] hover:underline">Retry</button>
+                  </div>
+                </td>
+              </tr>
+            )}
+
+            {!loading && !error && instances.length === 0 && (
+              <tr>
+                <td colSpan={6} className="py-4 text-slate-500 text-[12px]">No instances found.</td>
+              </tr>
+            )}
+
+            {!error && instances.map((inst) => {
               const isRunning = inst.status === 'Running'
               return (
                 <tr key={inst.id} className="border-t border-base-border">
@@ -88,16 +129,6 @@ export default function InstancesTable() {
                   <td className="py-2.5 pr-2"><UsageBar value={inst.cpu} active={isRunning} /></td>
                   <td className="py-2.5 pr-2"><UsageBar value={inst.memory} active={isRunning} /></td>
                   <td className="py-2.5 pr-2 text-slate-400 text-[12px]">{inst.public_ip}</td>
-                  <td className="py-2.5 pr-2">
-                    <div className="flex items-center gap-1.5">
-                      <button className="text-[11.5px] px-2.5 py-1 rounded-md bg-base-panel2 border border-base-border text-slate-300 hover:text-white">
-                        Details
-                      </button>
-                      <button className="text-slate-500 hover:text-slate-300">
-                        <MoreVertical className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </td>
                 </tr>
               )
             })}
@@ -105,20 +136,9 @@ export default function InstancesTable() {
         </table>
       </div>
 
-      {/* الترقيم (Pagination) */}
+      {/* التذييل — ملخص صادق فقط، بدون أزرار ترقيم شكلية */}
       <div className="flex items-center justify-between pt-2 mt-1 border-t border-base-border shrink-0">
-        <p className="text-slate-500 text-[11px]">Showing 1 to{instances.length} of {instances.length} results</p>
-        <div className="flex items-center gap-1">
-          <button className="w-6 h-6 flex items-center justify-center rounded-md text-slate-500 hover:text-white">
-            <ChevronsLeft className="w-3.5 h-3.5" />
-          </button>
-          <button className="w-6 h-6 flex items-center justify-center rounded-md bg-blue-600 text-white text-[11px] font-medium">
-            1
-          </button>
-          <button className="w-6 h-6 flex items-center justify-center rounded-md text-slate-500 hover:text-white">
-            <ChevronsRight className="w-3.5 h-3.5" />
-          </button>
-        </div>
+        <p className="text-slate-500 text-[11px]">{summary}</p>
       </div>
     </div>
   )

@@ -57,7 +57,7 @@ export default function Sidebar({ activeItem = 'dashboard', onSelect = () => {} 
       <div className="px-3 py-3 border-t border-base-border space-y-2 shrink-0">
         <button className="w-full flex items-center justify-between px-3 py-2 rounded-lg bg-base-panel2 border border-base-border text-left">
           <div className="leading-tight">
-            <p className="text-slate-500 text-[10px]">Environment</p>
+            <p className="text-slate-500 text-[11px]">Environment</p>
             <p className="text-slate-200 text-[12px] font-medium">Production</p>
           </div>
           <ChevronDown className="w-3.5 h-3.5 text-slate-500" />

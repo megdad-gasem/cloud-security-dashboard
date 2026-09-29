@@ -1,17 +1,27 @@
 // =====================================================================
 // transitions.js
-// دوال انتقال الحالة (pure-ish) لكل إجراء. كل دالة بتاخد `store` (عشان
-// تعدّل نسخ من العناصر وتضيف آثار جانبية زي إنشاء حادثة أو تحديث نتيجة
-// مربوطة) وبتُرجع { message } بيزر في الـ toast والـ audit.
+// ط¯ظˆط§ظ„ ط§ظ†طھظ‚ط§ظ„ ط§ظ„ط­ط§ظ„ط© (pure-ish) ظ„ظƒظ„ ط¥ط¬ط±ط§ط،. ظƒظ„ ط¯ط§ظ„ط© ط¨طھط§ط®ط¯ `store` (ط¹ط´ط§ظ†
+// طھط¹ط¯ظ‘ظ„ ظ†ط³ط® ظ…ظ† ط§ظ„ط¹ظ†ط§طµط± ظˆطھط¶ظٹظپ ط¢ط«ط§ط± ط¬ط§ظ†ط¨ظٹط© ط²ظٹ ط¥ظ†ط´ط§ط، ط­ط§ط¯ط«ط© ط£ظˆ طھط­ط¯ظٹط« ظ†طھظٹط¬ط©
+// ظ…ط±ط¨ظˆط·ط©) ظˆط¨طھظڈط±ط¬ط¹ { message } ط¨ظٹط²ط± ظپظٹ ط§ظ„ظ€ toast ظˆط§ظ„ظ€ audit.
 //
-// ملاحظة مهمة: دي محاكاة (simulation). لما يتوفر الـ backend، كل فرع هنا
-// بيكابله نداء store.dispatch -> FastAPI -> AWS SDK، والحالة هنا بتعالج
-// بعد تأكيد نجاح العملية الحقيقية.
+// ظ…ظ„ط§ط­ط¸ط© ظ…ظ‡ظ…ط©: ط¯ظٹ ظ…ط­ط§ظƒط§ط© (simulation). ظ„ظ…ط§ ظٹطھظˆظپط± ط§ظ„ظ€ backendطŒ ظƒظ„ ظپط±ط¹ ظ‡ظ†ط§
+// ط¨ظٹظƒط§ط¨ظ„ظ‡ ظ†ط¯ط§ط، store.dispatch -> FastAPI -> AWS SDKطŒ ظˆط§ظ„ط­ط§ظ„ط© ظ‡ظ†ط§ ط¨طھط¹ط§ظ„ط¬
+// ط¨ط¹ط¯ طھط£ظƒظٹط¯ ظ†ط¬ط§ط­ ط§ظ„ط¹ظ…ظ„ظٹط© ط§ظ„ط­ظ‚ظٹظ‚ظٹط©.
 // =====================================================================
 
 import { ACTION_TYPES } from './actionTypes'
 
-/** خريطة principal (زي root / omar.sec) -> id الهوية في collection identities */ 
+// Generated report entries store the same short display label used by the mock
+// Report History (e.g. 'Executive'), while the name keeps the full report-type
+// title (e.g. 'Executive Summary'). Both derive from the same report-type name.
+const REPORT_TYPE_LABEL = {
+  'Executive Summary': 'Executive',
+  'Compliance Report': 'Compliance',
+  'Incident Report': 'Incident',
+  'Vulnerability Report': 'Vulnerability',
+}
+
+/** ط®ط±ظٹط·ط© principal (ط²ظٹ root / omar.sec) -> id ط§ظ„ظ‡ظˆظٹط© ظپظٹ collection identities */ 
 function principalToId(principal) {
   if (principal === 'root') return 'u-root'
   if (principal === 'omar.sec') return 'u-omar'
@@ -40,7 +50,7 @@ export function applyTransition(store, { collection, id, actionType, item, meta 
     }
     if (actionType === 'verify') {
       store.replace('findings', id, (f) => { if (f.status === 'Remediated') f.status = 'Resolved' })
-      return { message: `${item.id} verified — marked resolved` }
+      return { message: `${item.id} verified - marked resolved` }
     }
     if (actionType === 'view_resource') {
       return { message: `Opening ${item.resource} in Infrastructure` }
@@ -125,7 +135,7 @@ export function applyTransition(store, { collection, id, actionType, item, meta 
     }
     if (actionType === 'block_respond') {
       store.replace('logs', id, (l) => { l.sourceBlocked = true; l.status = 'Responded' })
-      return { message: `Source ${item.sourceIp && item.sourceIp !== '—' ? item.sourceIp : item.source} blocked at perimeter` }
+      return { message: `Source ${item.sourceIp && item.sourceIp !== '-' ? item.sourceIp : item.source} blocked at perimeter` }
     }
   }
 
@@ -184,7 +194,7 @@ export function applyTransition(store, { collection, id, actionType, item, meta 
   if (collection === 'controls') {
     if (actionType === 'remediate_control') {
       store.replace('controls', id, (c) => { c.status = 'Passed' })
-      if (item.finding && item.finding !== '—') {
+      if (item.finding && item.finding !== 'â€”') {
         store.replace('findings', item.finding, (f) => { f.status = 'Resolved' })
       }
       return { message: `Control ${item.id} remediated` }
@@ -204,17 +214,27 @@ export function applyTransition(store, { collection, id, actionType, item, meta 
   // ---- Reports ----
   if (collection === 'reports') {
     if (actionType === 'generate_report') {
-      const type = meta?.type || 'Executive'
+      // `label` is the full report-type title (e.g. 'Executive Summary'); the
+      // stored `type` is normalized to the short label the mock Report History
+      // uses (e.g. 'Executive') so generated rows match the existing rows.
+      const label = meta?.type || 'Executive'
+      const type = REPORT_TYPE_LABEL[label] || label
+      const nowDate = new Date()
+      const month = nowDate.toLocaleString('en-US', { month: 'short' })
+      // Same display convention as mock history rows: 'Aug 25, 09:00'
+      const generated = nowDate.toLocaleString('en-US', {
+        month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false,
+      })
       store.addReport({
         id: `R-${++store._rep}`,
-        name: `${type} — ${store.nowStr()}`,
+        name: `${label} - ${month}`,
         type,
-        generated: store.nowStr(),
+        generated,
         format: 'PDF',
-        size: '—',
+        size: '2.4 MB',
         status: 'Ready',
       })
-      return { message: `${type} report generated` }
+      return { message: `${label} report generated` }
     }
     if (actionType === 'download_report') {
       return { message: `Downloading ${item.name}` }
@@ -224,5 +244,23 @@ export function applyTransition(store, { collection, id, actionType, item, meta 
     }
   }
 
-  return { message: `${ACTION_TYPES[actionType]?.label || actionType} completed` }
+
+  // ---- Dashboard Quick Actions ----
+  // Honest simulation: nothing is executed yet until the backend is wired.
+  // outcome 'not_executed' => audit records requested-but-not-executed (no state
+  // change), never a successful execution.
+  if (collection === 'quickActions') {
+    const label = ACTION_TYPES[actionType]?.label || actionType
+    const targetInfo = item && item.targetLabel
+      ? ` on ${item.targetLabel}${item.targetId && item.targetId !== item.targetLabel ? ` (${item.targetId})` : ''}`
+      : ''
+    return {
+      message: `${label} requested${targetInfo} — execution is not yet available; no changes were made.`,
+      outcome: 'not_executed',
+      // Expose target for audit recording
+      target: item && item.targetLabel
+        ? `${item.targetLabel}${item.targetId && item.targetId !== item.targetLabel ? ` (${item.targetId})` : ''}`
+        : undefined,
+    }
+  }  return { message: `${ACTION_TYPES[actionType]?.label || actionType} completed` }
 }

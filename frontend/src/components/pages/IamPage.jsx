@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react'
 import { Users, KeyRound, ShieldAlert, Crown, Search } from 'lucide-react'
-import { PageHeader, Panel, PanelHeader, StatTile, StatusDot, StatusText, SearchInput, ActionRow, ActionButton } from './ui'
+import { PageHeader, Panel, PanelHeader, StatTile, StatusDot, StatusText, SearchInput, ActionRow, ActionButton, Chip } from './ui'
 import { securityCenter, useSecurityCenter } from '../../store/securityCenter'
 
 // Maps an access-anomaly principal to the corresponding identity id so the
@@ -97,21 +97,7 @@ export default function IamPage() {
         <StatTile icon={KeyRound} accent="bg-purple-500/15 text-purple-400" title="Roles" value={roles.length} sub="role definitions" />
         <StatTile icon={Crown} accent="bg-red-500/15 text-red-400" title="Privileged" value={privileged} sub="admin access" />
         <StatTile icon={ShieldAlert} accent="bg-amber-500/15 text-amber-400" title="Anomalies" value={anomaliesCount} sub="detected" />
-        {/* MFA Off doubles as a filter — click to show only identities without MFA. */}
-        <button
-          type="button"
-          onClick={() => setMfaOnly((v) => !v)}
-          className={`text-left rounded-xl border p-3.5 min-w-0 flex items-center gap-3 transition-colors ${mfaOnly ? 'border-blue-500/50 bg-blue-600/10' : 'bg-base-panel border-base-border hover:bg-base-panel2'}`}
-        >
-          <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 bg-red-500/15 text-red-400">
-            <ShieldAlert className="w-5 h-5" strokeWidth={2.1} />
-          </div>
-          <div className="min-w-0">
-            <p className="text-slate-400 text-[11px] truncate">MFA Off</p>
-            <p className="text-white text-xl font-semibold leading-tight">{mfaOff}</p>
-            <p className="text-slate-500 text-[10.5px] truncate">{mfaOnly ? 'filtering — click to clear' : 'identities · click to filter'}</p>
-          </div>
-        </button>
+        <StatTile icon={ShieldAlert} accent="bg-red-500/15 text-red-400" title="MFA Off" value={mfaOff} sub="identities" />
       </div>
 
       {mfaOnly && (
@@ -126,13 +112,16 @@ export default function IamPage() {
         <Panel className="flex flex-col min-h-0 overflow-hidden">
           <div className="flex items-center justify-between gap-2 px-4 pt-4 pb-2 shrink-0">
             <PanelHeader title="Identities" subtitle={`${filtered.length} shown`} />
-            <SearchInput value={q} onChange={setQ} />
+            <div className="flex items-center gap-2">
+              <Chip active={mfaOnly} onClick={() => setMfaOnly((v) => !v)}>MFA Disabled</Chip>
+              <SearchInput value={q} onChange={setQ} />
+            </div>
           </div>
           <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar px-3 pb-3 space-y-1.5">
             {filtered.map((i) => (
               <div key={i.id} className="px-2.5 py-2 rounded-lg border border-base-border bg-base-panel2/30">
                 <div className="flex items-center gap-2.5">
-                  <StatusDot tone={i.mfa === 'Enabled' ? 'green' : i.mfa === 'Disabled' ? 'red' : 'slate'} />
+                  <StatusDot status={i.mfa === 'Enabled' ? 'active' : i.mfa === 'Disabled' ? 'critical' : 'stopped'} />
                   <div className="flex-1 min-w-0">
                     <p className="text-slate-200 text-[12px] font-medium truncate">{i.name}</p>
                     <p className="text-slate-500 text-[10px] truncate">{i.type} · {i.roles.join(', ')}</p>
