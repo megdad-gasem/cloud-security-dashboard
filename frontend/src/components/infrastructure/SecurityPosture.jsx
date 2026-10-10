@@ -49,7 +49,9 @@ export default function SecurityPosture({ findings = [], onViewResource }) {
             )}
             {filtered.map((f) => (
               <div key={f.id} className="grid grid-cols-[70px_1fr_70px] items-center gap-1 px-2 py-1.5 hover:bg-base-panel2/40 transition-colors">
-                <SeverityChip severity={f.severity} />
+                <div className="justify-self-start">
+                  <SeverityChip severity={f.severity} />
+                </div>
                 <div className="min-w-0">
                   <p className="text-slate-200 text-[10.5px] font-medium truncate">{f.title}</p>
                   <p className="text-slate-500 text-[9px] truncate">{f.affectedResource}</p>

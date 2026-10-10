@@ -31,6 +31,20 @@ body {
   font-family: 'Inter', system-ui, sans-serif;
 }
 
+/* ---- Aegis sidebar brand logo (theme-swapped, transparent SVG) ---- */
+.aegis-brand-logo {
+  background: transparent;
+}
+.aegis-brand-logo-light {
+  display: none;
+}
+html.light .aegis-brand-logo-dark {
+  display: none;
+}
+html.light .aegis-brand-logo-light {
+  display: block;
+}
+
 /* شريط تمرير رفيع لأي عنصر داخلي بيحتاج scroll صغير (مثلاً جدول طويل جداً) */
 .thin-scrollbar::-webkit-scrollbar {
   width: 6px;
@@ -77,9 +91,9 @@ body {
   display: none !important;
 }
 
-/* Edge default color */
+/* Edge default color (default = dark). Light keeps its own #cbd5e1 override below. */
 .react-flow__edge-path {
-  stroke: #475569;
+  stroke: #64748B;
 }
 
 /* Selection box */
@@ -99,6 +113,49 @@ body {
 .aegis-minimap {
   border-radius: 8px !important;
   overflow: hidden;
+  background: #162236 !important;
+  border: 1px solid #334155 !important;
+}
+
+/* Topology node/container surfaces — dark-default contrast against the #09121F
+   canvas. Raw hexes follow the existing React Flow chrome pattern (.aegis-reactflow
+   / .aegis-rf-controls) where the tokens are too close to read as structure.
+   Light mode restores the token values in the light section below. */
+.aegis-topo-node {
+  background-color: #162236;
+}
+
+/* Container hierarchy — three neutral surface depths, darkest to lightest:
+   Canvas -> VPC -> AZ -> Subnet -> Resource. No colored fills; hierarchy comes
+   from nesting, size, border weight and light/dark surface depth. */
+.aegis-topo-vpc {
+  background-color: rgba(22, 34, 54, 0.52);
+  border-color: #475569;
+  border-width: 2px;
+}
+.aegis-topo-az {
+  background-color: rgba(22, 34, 54, 0.42);
+  border-color: #475569;
+}
+.aegis-topo-subnet {
+  background-color: rgba(22, 34, 54, 0.32);
+  border-color: #334155;
+}
+.aegis-topo-head {
+  border-bottom-color: #334155;
+}
+
+/* Semantic state accent — thin bar on the node edge; accent only, the card
+   surface stays neutral. Healthy nodes get no accent. Same semantic color
+   family as the status dots, so light mode is consistent too. */
+.aegis-state-bar {
+  position: absolute;
+  top: 0;
+  left: 1px;
+  right: 1px;
+  height: 2px;
+  border-radius: 2px 2px 0 0;
+  pointer-events: none;
 }
 
 /* =====================================================================
@@ -208,6 +265,21 @@ html.light .aegis-rf-controls button:hover {
   background: #f1f5f9 !important;
   color: #0f172a !important;
   border-color: #cbd5e1 !important;
+}
+
+/* Light mode: restore the original token surfaces for topology chrome. */
+html.light .aegis-topo-node { background-color: #ffffff; }
+html.light .aegis-topo-vpc,
+html.light .aegis-topo-az,
+html.light .aegis-topo-subnet {
+  background-color: rgba(241, 245, 249, 0.4);
+  border-color: #e2e8f0;
+  border-width: 1px;
+}
+html.light .aegis-topo-head { border-bottom-color: #e2e8f0; }
+html.light .aegis-minimap {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
 }
 
 /* ----- Scrollbar light ----- */

@@ -1,6 +1,6 @@
 import React from 'react'
 import {
-  Cloud, LayoutDashboard, Server, Activity, Shield, Users, FileText,
+  LayoutDashboard, Server, Activity, Shield, Users, FileText,
   AlertCircle, ClipboardCheck, BarChart3, Settings, ChevronDown, CheckCircle2,
 } from 'lucide-react'
 import { navItems } from '../data/mockData'
@@ -22,14 +22,18 @@ export default function Sidebar({ activeItem = 'dashboard', onSelect = () => {} 
   return (
     <aside className="w-60 h-full flex flex-col bg-base-bg border-r border-base-border shrink-0">
       {/* اللوقو */}
-      <div className="h-16 flex items-center gap-2.5 px-5 border-b border-base-border shrink-0">
-        <div className="w-8 h-8 rounded-lg bg-blue-500/15 flex items-center justify-center">
-          <Cloud className="w-5 h-5 text-blue-400" strokeWidth={2.2} />
-        </div>
-        <div className="leading-tight">
-          <p className="text-white text-[13px] font-semibold">Cloud Security</p>
-          <p className="text-slate-500 text-[11px] -mt-0.5">Center</p>
-        </div>
+      <div className="h-16 flex items-center px-5 border-b border-base-border shrink-0">
+        <img
+          src="/aegis-logo-dark.svg"
+          alt="Aegis Cloud Security Center"
+          className="aegis-brand-logo aegis-brand-logo-dark h-11 w-auto max-w-full object-contain"
+        />
+        <img
+          src="/aegis-logo-light.svg"
+          alt=""
+          aria-hidden="true"
+          className="aegis-brand-logo aegis-brand-logo-light h-11 w-auto max-w-full object-contain"
+        />
       </div>
 
       {/* قائمة التنقل */}
